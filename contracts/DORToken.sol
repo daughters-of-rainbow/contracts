@@ -102,6 +102,7 @@ contract DORToken is ERC721Enumerable, ReentrancyGuard, Pausable, WhitelistAdmin
     mapping (address => uint256) public whitelistMintCounts; // limit for pre-sale
     uint256 public whitelistMintMaxCount = 2;
 
+    bool public sgrClaimEnabled; // silver/gold/rainbow switch
     bool public ebibleClaimEnabled; // ebible claim switch
     bool public m3dClaimEnabled;  // m3d claim switch
 
@@ -109,6 +110,10 @@ contract DORToken is ERC721Enumerable, ReentrancyGuard, Pausable, WhitelistAdmin
     // params
     function setWhitelistMintMaxCount(uint256 value) public onlyWhitelistAdmin {
         whitelistMintMaxCount = value;
+    }
+
+    function setSGREnabled(bool flag) public onlyWhitelistAdmin {
+        sgrClaimEnabled = flag;
     }
 
     function setEbileEnabled(bool flag) public onlyWhitelistAdmin {
@@ -470,6 +475,8 @@ contract DORToken is ERC721Enumerable, ReentrancyGuard, Pausable, WhitelistAdmin
     }
 
     function claimSGR(uint256 tp) public {
+        require(sgrClaimEnabled, "not start");
+
         address account = _msgSender();
         // check silver/gold/rainbow
         (uint256[] memory tokenIds, uint256[] memory tokenTypes) = getTokens(account);
@@ -638,6 +645,10 @@ contract DORToken is ERC721Enumerable, ReentrancyGuard, Pausable, WhitelistAdmin
     }
 
     function canClaimSGR(address owner) public view returns (bool silver, bool gold, bool rainbow) {
+        if (!sgrClaimEnabled) { // not enabled
+            return (false, false, false);
+        }
+
         // check silver/gold/rainbow
         (uint256[] memory tokenIds, uint256[] memory tokenTypes) = getTokens(owner);
         uint256 daughterCount;
